@@ -1,0 +1,121 @@
+syntax = "proto3";
+
+package gateway.user;
+
+option go_package = "gateway/user";
+
+import "api.proto";
+
+// 用户统计数据
+message UserStats {
+    int64 friends_count = 1;  // 好友数量
+    int64 workflow_count = 2; // 工作流数量
+}
+
+// 用户详细信息
+message UserInfo {
+    string account_num = 1;   // 账号
+    string name = 2;          // 用户名
+    string desc = 3;          // 个人简介
+    string email = 4;         // 邮箱
+    string phone = 5;         // 手机号
+    string avatar_url = 6;    // 头像URL
+    string create_at = 7;     // 注册时间
+    string last_login = 8;    // 最后登录时间
+    string ip = 9;            // IP地址
+    repeated string tags = 10;// 标签
+    int32 level = 11;         // 等级
+    UserStats stats = 12;     // 统计数据
+}
+
+// 获取用户信息请求
+message GetUserInfoReq {
+    string account_num = 1 [(api.query) = "account_num"]; // 用户账号
+}
+
+// 获取用户信息响应
+message GetUserInfoResp {
+    int32 code = 1;       // 状态码
+    UserInfo data = 2;    // 用户信息
+    string msg = 3;       // 响应信息
+}
+
+// 上传头像请求
+message UploadAvatarReq {
+    bytes avatar = 1 [(api.form) = "avatar"];        // 图片文件
+    string account_num = 2 [(api.form) = "account_num"]; // 用户账号
+}
+
+// 上传头像返回数据
+message UploadAvatarData {
+    string avatar_url = 1; // 头像URL
+    string url = 2;        // URL
+}
+
+// 上传头像响应
+message UploadAvatarResp {
+    int32 code = 1;           // 状态码
+    UploadAvatarData data = 2;// 返回数据
+    string msg = 3;           // 响应信息
+}
+
+// 更新用户信息请求
+message UpdateUserInfoReq {
+    string name = 1 [(api.body) = "name"];         // 新昵称
+    string desc = 2 [(api.body) = "desc"];         // 新简介
+    string email = 3 [(api.body) = "email"];       // 邮箱
+    string phone = 4 [(api.body) = "phone"];       // 手机号
+    string location = 5 [(api.body) = "location"]; // 城市
+}
+
+// 更新用户信息响应
+message UpdateUserInfoResp {
+    int32 code = 1; // 状态码
+    string msg = 2; // 响应信息
+}
+
+// 搜索用户请求
+message SearchUserReq {
+    string keyword = 1 [(api.query) = "keyword"]; // 搜索关键词
+}
+
+// 搜索结果项
+message SearchUserItem {
+    string account_num = 1;   // 账号
+    string name = 2;          // 用户名
+    string avatar_url = 3;    // 头像URL
+    bool is_friend = 4;       // 是否是好友
+    repeated string tags = 5; // 标签
+}
+
+// 搜索用户响应
+message SearchUserResp {
+    int32 code = 1;              // 状态码
+    repeated SearchUserItem data = 2; // 搜索结果列表
+    string msg = 3;              // 响应信息
+}
+
+// 用户服务
+service UserService {
+    option (api.service_path) = "userService";
+    // 获取用户信息
+    rpc GetUserInfo(GetUserInfoReq) returns (GetUserInfoResp) {
+        option (api.get) = "/api/v1/user/info";
+    }
+
+    // 上传头像
+    rpc UploadAvatar(UploadAvatarReq) returns (UploadAvatarResp) {
+        option (api.post) = "/api/v1/user/upload-avatar";
+    }
+
+    // 更新用户信息
+    rpc UpdateUserInfo(UpdateUserInfoReq) returns (UpdateUserInfoResp) {
+        option (api.put) = "/api/v1/user/info";
+    }
+
+    // 全网用户搜索
+    rpc SearchUser(SearchUserReq) returns (SearchUserResp) {
+        option (api.get) = "/api/v1/user/search";
+    }
+}
+

@@ -1,0 +1,214 @@
+syntax = "proto3";
+
+package gateway.workflow;
+
+option go_package = "gateway/workflow";
+
+import "api.proto";
+
+// 工作流列表项
+message WorkflowItem {
+    string id = 1;
+    string name = 2;          // 工作流名称
+    string description = 3;   // 描述
+    string icon = 4;          // 图标
+    repeated string tags = 5; // 标签
+    string author = 6;        // 作者
+    int64 usage_count = 7;    // 使用次数
+}
+
+// 获取工作流列表请求
+message ListWorkflowsReq {
+    int32 page = 1 [(api.query) = "page"];          // 页码
+    int32 page_size = 2 [(api.query) = "pageSize"]; // 每页数量
+    string keyword = 3 [(api.query) = "keyword"];   // 搜索关键词
+    string category = 4 [(api.query) = "category"]; // 分类
+}
+
+// 工作流列表数据
+message ListWorkflowsData {
+    repeated WorkflowItem list = 1; // 工作流列表
+    int64 total = 2;                // 总数
+}
+
+// 获取工作流列表响应
+message ListWorkflowsResp {
+    int32 code = 1;             // 状态码
+    ListWorkflowsData data = 2; // 数据
+    string msg = 3;             // 响应信息
+}
+
+// 工作流步骤
+message WorkflowStep {
+    string name = 1; // 步骤名称
+    string type = 2; // 步骤类型
+}
+
+// 工作流详情
+message WorkflowDetail {
+    string id = 1;
+    string name = 2;
+    repeated WorkflowStep steps = 3; // 步骤列表
+}
+
+// 获取工作流详情请求
+message GetWorkflowReq {
+    string id = 1 [(api.path) = "id"]; // 工作流ID
+}
+
+// 获取工作流详情响应
+message GetWorkflowResp {
+    int32 code = 1;
+    WorkflowDetail data = 2;
+    string msg = 3;
+}
+
+// 执行工作流请求
+message ExecuteWorkflowReq {
+    string id = 1 [(api.path) = "id"];           // 工作流ID
+    map<string, string> params = 2 [(api.body) = "params"]; // 执行参数
+}
+
+// 执行工作流返回数据
+message ExecuteWorkflowData {
+    string execution_id = 1; // 执行ID
+    string status = 2;       // 状态
+}
+
+// 执行工作流响应
+message ExecuteWorkflowResp {
+    int32 code = 1;
+    ExecuteWorkflowData data = 2;
+    string msg = 3;
+}
+
+// 执行记录项
+message ExecutionItem {
+    string id = 1;
+    string workflow_id = 2;
+    string status = 3;     // 状态 (success/failed/running)
+    string start_time = 4;
+    string end_time = 5;
+}
+
+// 获取执行记录列表请求
+message ListExecutionsReq {
+    int32 page = 1 [(api.query) = "page"];          // 页码
+    int32 page_size = 2 [(api.query) = "pageSize"]; // 每页数量
+    string status = 3 [(api.query) = "status"];     // 状态筛选
+}
+
+// 获取执行记录列表响应
+message ListExecutionsResp {
+    int32 code = 1;
+    repeated ExecutionItem data = 2; // 执行记录列表
+    string msg = 3;
+}
+
+// 执行步骤状态
+message ExecutionStepStatus {
+    string name = 1;
+    string status = 2;   // 状态
+    string duration = 3; // 耗时
+}
+
+// 执行详情
+message ExecutionDetail {
+    string id = 1;
+    string workflow_id = 2;
+    string status = 3;
+    string start_time = 4;
+    string end_time = 5;
+    repeated string logs = 6;              // 日志
+    repeated ExecutionStepStatus steps = 7; // 步骤状态
+}
+
+// 获取执行详情请求
+message GetExecutionReq {
+    string id = 1 [(api.path) = "id"]; // 执行ID
+}
+
+// 获取执行详情响应
+message GetExecutionResp {
+    int32 code = 1;
+    ExecutionDetail data = 2;
+    string msg = 3;
+}
+
+// 工作流统计数据
+message WorkflowStatsData {
+    int64 total_executions = 1;           // 总执行次数
+    double success_rate = 2;              // 成功率
+    int64 saved_time = 3;                 // 节省时间
+    repeated ExecutionItem recent_records = 4; // 最近记录
+}
+
+// 获取工作流统计数据响应
+message GetWorkflowStatsResp {
+    int32 code = 1;
+    WorkflowStatsData data = 2;
+    string msg = 3;
+}
+
+// 执行操作请求 (取消/暂停/重试)
+message ExecutionActionReq {
+    string id = 1 [(api.path) = "id"]; // 执行ID
+}
+
+// 执行操作响应
+message ExecutionActionResp {
+    int32 code = 1;
+    string msg = 2;
+}
+
+message Empty {}
+
+// 工作流服务
+service WorkflowService {
+    option (api.service_path) = "workflowService";
+    // 获取工作流列表
+    rpc ListWorkflows(ListWorkflowsReq) returns (ListWorkflowsResp) {
+        option (api.get) = "/api/v1/workflows";
+    }
+
+    // 获取工作流详情
+    rpc GetWorkflow(GetWorkflowReq) returns (GetWorkflowResp) {
+        option (api.get) = "/api/v1/workflows/:id";
+    }
+
+    // 执行工作流
+    rpc ExecuteWorkflow(ExecuteWorkflowReq) returns (ExecuteWorkflowResp) {
+        option (api.post) = "/api/v1/workflows/:id/execute";
+    }
+
+    // 获取执行记录列表
+    rpc ListExecutions(ListExecutionsReq) returns (ListExecutionsResp) {
+        option (api.get) = "/api/v1/executions";
+    }
+
+    // 获取执行详情
+    rpc GetExecution(GetExecutionReq) returns (GetExecutionResp) {
+        option (api.get) = "/api/v1/executions/:id";
+    }
+
+    // 获取工作流统计数据
+    rpc GetWorkflowStats(Empty) returns (GetWorkflowStatsResp) {
+        option (api.get) = "/api/v1/workflow/stats";
+    }
+
+    // 取消执行
+    rpc CancelExecution(ExecutionActionReq) returns (ExecutionActionResp) {
+        option (api.post) = "/api/v1/executions/:id/cancel";
+    }
+
+    // 暂停执行
+    rpc PauseExecution(ExecutionActionReq) returns (ExecutionActionResp) {
+        option (api.post) = "/api/v1/executions/:id/pause";
+    }
+
+    // 重试执行
+    rpc RetryExecution(ExecutionActionReq) returns (ExecutionActionResp) {
+        option (api.post) = "/api/v1/executions/:id/retry";
+    }
+}
+

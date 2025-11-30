@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package gateway.chat;
+
+option go_package = "gateway/chat";
+
+import "api.proto";
+
+// 刷新聊天记录请求
+message RefreshTextReq {
+    string sender_account_num = 1 [(api.body) = "SenderAccountNum"]; // 发送者账号
+    string receiver_account_num = 2 [(api.body) = "ReceiverAccountNum"]; // 接收者账号
+}
+
+// 聊天消息内容
+message ChatMessage {
+    string content = 1;            // 消息内容
+    string sender_account_num = 2; // 发送者账号
+    string receiver_account_num = 3;// 接收者账号
+    string timestamp = 4;          // 发送时间
+}
+
+// 消息列表包装
+message TextData {
+    repeated ChatMessage content = 1; // 消息列表
+}
+
+// 刷新文本数据
+message RefreshTextData {
+    TextData text = 1;
+}
+
+// 刷新聊天记录响应
+message RefreshTextResp {
+    int32 code = 1;          // 状态码
+    RefreshTextData data = 2;// 响应数据
+    string msg = 3;          // 响应信息
+}
+
+// WebSocket 消息格式
+message WsMessage {
+    string data = 1;        // 消息内容
+    string account_num = 2; // 发送者账号
+    string receiver = 3;    // 接收者账号
+    string type = 4;        // 消息类型 (SendText, RefreshText, etc.)
+}
+
+// 聊天服务
+service ChatService {
+    option (api.service_path) = "chatService";
+    // 刷新聊天记录
+    rpc RefreshText(RefreshTextReq) returns (RefreshTextResp) {
+        option (api.post) = "/api/v1/chat/text/refresh";
+    }
+}
+

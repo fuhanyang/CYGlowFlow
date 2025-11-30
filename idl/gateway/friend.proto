@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package gateway.friend;
+
+option go_package = "gateway/friend";
+
+import "api.proto";
+
+// 获取好友列表请求
+message GetFriendListReq {
+    string account_num = 1 [(api.body) = "accountNum"]; // 当前用户账号
+}
+
+// 好友信息
+message FriendInfo {
+    string account_num = 1;   // 好友账号
+    string name = 2;          // 好友用户名
+    string desc = 3;          // 好友简介
+    string avatar_url = 4;    // 好友头像URL
+    bool is_online = 5;       // 是否在线
+    string last_message = 6;  // 最后一条消息
+    int32 unread_count = 7;   // 未读消息数
+}
+
+// 获取好友列表响应
+message GetFriendListResp {
+    int32 code = 1;              // 状态码
+    repeated FriendInfo data = 2; // 好友列表
+    string msg = 3;              // 响应信息
+}
+
+// 添加好友请求
+message AddFriendReq {
+    string account_num = 1 [(api.body) = "accountNum"];        // 当前用户账号
+    string target_account_num = 2 [(api.body) = "targetAccountNum"]; // 目标用户账号
+}
+
+// 添加好友返回数据
+message AddFriendData {
+    string account_num = 1; // 目标用户账号
+    string name = 2;        // 目标用户名
+}
+
+// 添加好友响应
+message AddFriendResp {
+    int32 code = 1;         // 状态码
+    AddFriendData data = 2; // 返回数据
+    string msg = 3;         // 响应信息
+}
+
+// 好友服务
+service FriendService {
+    option (api.service_path) = "friendService";
+    // 获取好友列表
+    rpc GetFriendList(GetFriendListReq) returns (GetFriendListResp) {
+        option (api.post) = "/api/v1/friend/list";
+    }
+
+    // 通过账号添加好友
+    rpc AddFriend(AddFriendReq) returns (AddFriendResp) {
+        option (api.post) = "/api/v1/friend/addition/with_account_num";
+    }
+}
+

@@ -1,0 +1,108 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "user";
+
+// 用户基本信息
+message UserBaseInfo {
+    int64 user_id = 1;        // 用户ID
+    int64 account_num = 2;    // 账号 (数字)
+    string name = 3;          // 昵称
+    string email = 4;         // 邮箱
+    string phone = 5;         // 手机号
+    string avatar_url = 6;    // 头像URL
+    string desc = 7;          // 个人简介
+    string password = 8;      // 密码 (加密后)
+    int32 status = 9;         // 状态
+    string created_at = 10;   // 创建时间
+    string updated_at = 11;   // 更新时间
+}
+
+// 注册请求
+message RegisterReq {
+    string username = 1;      // 用户名
+    string password = 2;      // 密码
+    string email = 3;         // 邮箱
+    string phone = 4;         // 手机号
+}
+
+// 注册响应
+message RegisterResp {
+    int64 user_id = 1;        // 用户ID
+    int64 account_num = 2;    // 生成的账号 (数字)
+}
+
+// 登录请求
+message LoginReq {
+    int64 account_num = 1;    // 账号 (数字)
+    string password = 2;      // 密码
+}
+
+// 登录响应
+message LoginResp {
+    int64 user_id = 1;        // 用户ID
+    bool success = 2;         // 是否成功
+}
+
+// 登出请求
+message LogoutReq {
+    int64 user_id = 2;        // 用户ID
+}
+
+// 登出响应
+message LogoutResp {
+    bool success = 1;
+}
+
+// 销户请求
+message DeleteAccountReq {
+    int64 user_id = 1;        // 用户ID
+}
+
+// 销户响应
+message DeleteAccountResp {
+    bool success = 1;
+}
+
+// 获取用户信息请求
+message GetUserInfoReq {
+    int64 user_id = 1;        // 用户ID (优先)
+    int64 account_num = 2;    // 账号 (可选，数字)
+}
+
+// 获取用户信息响应
+message GetUserInfoResp {
+    UserBaseInfo user_info = 1;
+}
+
+// 更新用户信息请求
+message UpdateUserInfoReq {
+    int64 user_id = 1;        // 用户ID
+    string name = 2;          // 昵称
+    string email = 3;         // 邮箱
+    string phone = 4;         // 手机号
+    string avatar_url = 5;    // 头像
+    string desc = 6;          // 简介
+}
+
+// 更新用户信息响应
+message UpdateUserInfoResp {
+    bool success = 1;
+}
+
+// 用户认证服务
+service UserService {
+    // 注册
+    rpc Register(RegisterReq) returns (RegisterResp);
+    // 登录
+    rpc Login(LoginReq) returns (LoginResp);
+    // 登出
+    rpc Logout(LogoutReq) returns (LogoutResp);
+    // 销户
+    rpc DeleteAccount(DeleteAccountReq) returns (DeleteAccountResp);
+    // 获取用户信息
+    rpc GetUserInfo(GetUserInfoReq) returns (GetUserInfoResp);
+    // 更新用户信息
+    rpc UpdateUserInfo(UpdateUserInfoReq) returns (UpdateUserInfoResp);
+}

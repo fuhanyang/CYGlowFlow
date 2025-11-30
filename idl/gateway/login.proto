@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package gateway.login;
+
+option go_package = "gateway/login";
+
+import "api.proto";
+
+// 注册请求参数
+message RegisterReq {
+    string username = 1 [(api.body) = "username"];           // 用户名
+    string password = 2 [(api.body) = "password"];           // 密码
+    string password_confirm = 3 [(api.body) = "passwordConfirm"]; // 确认密码
+    string ip = 4 [(api.body) = "ip"];                       // IP地址
+}
+
+// 注册响应
+message RegisterResp {
+    int32 code = 1;       // 状态码
+    string data = 2;      // 响应数据
+    string msg = 3;       // 响应信息
+}
+
+// 登录请求参数
+message LoginReq {
+    int64 account_num = 1 [(api.body) = "accountNum"];      // 账号
+    string password = 2 [(api.body) = "password"];           // 密码
+    string ip = 3 [(api.body) = "ip"];                       // IP地址
+}
+
+
+// 登录响应
+message LoginResp {
+    int32 code = 1;       // 状态码
+    string data = 2;   // 登录数据
+    string msg = 3;       // 响应信息
+}
+
+// 登出请求参数
+message LogoffReq {
+    int64 account_num = 1 [(api.body) = "accountNum"];      // 账号
+    string ip = 2 [(api.body) = "ip"];                       // IP地址
+}
+
+// 登出响应
+message LogoffResp {
+    int32 code = 1;       // 状态码
+    string msg = 3;       // 响应信息
+}
+
+// 登录服务
+service LoginService {
+    option (api.service_path) = "loginService";
+    // 用户注册
+    rpc Register(RegisterReq) returns (RegisterResp) {
+        option (api.post) = "/api/v1/user/register";
+    }
+
+    // 用户登录
+    rpc Login(LoginReq) returns (LoginResp) {
+        option (api.post) = "/api/v1/user/login";
+    }
+
+    // 用户登出
+    rpc Logoff(LogoffReq) returns (LogoffResp) {
+        option (api.post) = "/api/v1/user/logoff";
+    }
+}

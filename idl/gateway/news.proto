@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package gateway.news;
+
+option go_package = "gateway/news";
+
+import "api.proto";
+
+// 新闻项
+message NewsItem {
+    int64 id = 1;        // 新闻ID
+    string title = 2;    // 标题
+    string summary = 3;  // 摘要
+    string source = 4;   // 来源
+    string time = 5;     // 时间
+    string category = 6; // 分类
+    string image = 7;    // 图片URL
+}
+
+// 获取热点新闻请求
+message GetHotNewsReq {
+    string category = 1 [(api.query) = "category"]; // 分类标签
+}
+
+// 获取热点新闻响应
+message GetHotNewsResp {
+    int32 code = 1;              // 状态码
+    repeated NewsItem data = 2;  // 新闻列表
+    string msg = 3;              // 响应信息
+}
+
+// 新闻服务
+service NewsService {
+    option (api.service_path) = "newsService";
+    // 获取今日热点
+    rpc GetHotNews(GetHotNewsReq) returns (GetHotNewsResp) {
+        option (api.get) = "/api/v1/news/hot";
+    }
+}
+

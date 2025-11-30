@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package gateway.home;
+
+option go_package = "gateway/home";
+
+import "api.proto";
+
+message Empty {}
+
+
+service HomeService {
+    option (api.service_path) = "homeService";
+    rpc Home(Empty) returns (Empty) {
+        option (api.get) = "/api/v1/";
+    }
+}
+
