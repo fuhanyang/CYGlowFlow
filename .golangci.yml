@@ -1,0 +1,25 @@
+linters:
+  enable:
+    - govet
+    - errcheck
+
+run:
+  go: "1.25"
+  timeout: 5m
+
+issues:
+  exclude-dirs:
+    - vendor
+    - hertz_gen
+    - kitex_gen
+    - rpc_gen
+  exclude-files:
+    - ".*\\.(pb\\.go|gen\\.go)$"
+  exclude-rules:
+    # Exclude some linter issues from generated files
+    - path: _test\\.go
+      linters:
+        - errcheck
+    - path: (hertz_gen|kitex_gen|rpc_gen)
+      linters:
+        - all

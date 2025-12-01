@@ -21,8 +21,7 @@ func GetUserInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &user.GetUserInfoResp{}
-	resp, err = userService.NewGetUserInfoService(ctx, c).Run(&req)
+	resp, err := userService.NewGetUserInfoService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return
@@ -42,8 +41,7 @@ func UploadAvatar(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &user.UploadAvatarResp{}
-	resp, err = userService.NewUploadAvatarService(ctx, c).Run(&req)
+	resp, err := userService.NewUploadAvatarService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return
@@ -63,8 +61,7 @@ func UpdateUserInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &user.UpdateUserInfoResp{}
-	resp, err = userService.NewUpdateUserInfoService(ctx, c).Run(&req)
+	resp, err := userService.NewUpdateUserInfoService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return
@@ -84,8 +81,7 @@ func SearchUser(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &user.SearchUserResp{}
-	resp, err = userService.NewSearchUserService(ctx, c).Run(&req)
+	resp, err := userService.NewSearchUserService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return

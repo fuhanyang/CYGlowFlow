@@ -46,7 +46,7 @@ func (tb *TokenBucket) Allow() bool {
 	elapsed := now.Sub(tb.lastRefill).Seconds()
 
 	// 补充令牌
-	tb.tokens = tb.tokens + elapsed*float64(tb.rate)
+	tb.tokens += elapsed * float64(tb.rate)
 	if tb.tokens > float64(tb.capacity) {
 		tb.tokens = float64(tb.capacity)
 	}

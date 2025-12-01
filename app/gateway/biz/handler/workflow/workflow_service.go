@@ -21,8 +21,7 @@ func ListWorkflows(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &workflow.ListWorkflowsResp{}
-	resp, err = workflowService.NewListWorkflowsService(ctx, c).Run(&req)
+	resp, err := workflowService.NewListWorkflowsService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return
@@ -42,8 +41,7 @@ func GetWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &workflow.GetWorkflowResp{}
-	resp, err = workflowService.NewGetWorkflowService(ctx, c).Run(&req)
+	resp, err := workflowService.NewGetWorkflowService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return
@@ -63,8 +61,7 @@ func ExecuteWorkflow(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &workflow.ExecuteWorkflowResp{}
-	resp, err = workflowService.NewExecuteWorkflowService(ctx, c).Run(&req)
+	resp, err := workflowService.NewExecuteWorkflowService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return
@@ -84,8 +81,7 @@ func ListExecutions(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &workflow.ListExecutionsResp{}
-	resp, err = workflowService.NewListExecutionsService(ctx, c).Run(&req)
+	resp, err := workflowService.NewListExecutionsService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return
@@ -105,8 +101,7 @@ func GetExecution(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &workflow.GetExecutionResp{}
-	resp, err = workflowService.NewGetExecutionService(ctx, c).Run(&req)
+	resp, err := workflowService.NewGetExecutionService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return
@@ -126,8 +121,7 @@ func GetWorkflowStats(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &workflow.GetWorkflowStatsResp{}
-	resp, err = workflowService.NewGetWorkflowStatsService(ctx, c).Run(&req)
+	resp, err := workflowService.NewGetWorkflowStatsService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return
@@ -147,8 +141,7 @@ func CancelExecution(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &workflow.ExecutionActionResp{}
-	resp, err = workflowService.NewCancelExecutionService(ctx, c).Run(&req)
+	resp, err := workflowService.NewCancelExecutionService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return
@@ -168,8 +161,7 @@ func PauseExecution(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &workflow.ExecutionActionResp{}
-	resp, err = workflowService.NewPauseExecutionService(ctx, c).Run(&req)
+	resp, err := workflowService.NewPauseExecutionService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return
@@ -189,8 +181,7 @@ func RetryExecution(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &workflow.ExecutionActionResp{}
-	resp, err = workflowService.NewRetryExecutionService(ctx, c).Run(&req)
+	resp, err := workflowService.NewRetryExecutionService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return

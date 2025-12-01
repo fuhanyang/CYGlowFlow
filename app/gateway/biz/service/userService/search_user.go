@@ -12,12 +12,12 @@ type SearchUserService struct {
 	Context        context.Context
 }
 
-func NewSearchUserService(Context context.Context, RequestContext *app.RequestContext) *SearchUserService {
-	return &SearchUserService{RequestContext: RequestContext, Context: Context}
+func NewSearchUserService(ctx context.Context, requestContext *app.RequestContext) *SearchUserService {
+	return &SearchUserService{RequestContext: requestContext, Context: ctx}
 }
 
 func (h *SearchUserService) Run(req *user.SearchUserReq) (resp *user.SearchUserResp, err error) {
-	//defer func() {
+	// defer func() {
 	// hlog.CtxInfof(h.Context, "req = %+v", req)
 	// hlog.CtxInfof(h.Context, "resp = %+v", resp)
 	//}()

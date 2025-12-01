@@ -12,15 +12,15 @@ type PauseExecutionService struct {
 	Context        context.Context
 }
 
-func NewPauseExecutionService(Context context.Context, RequestContext *app.RequestContext) *PauseExecutionService {
-	return &PauseExecutionService{RequestContext: RequestContext, Context: Context}
+func NewPauseExecutionService(ctx context.Context, requestContext *app.RequestContext) *PauseExecutionService {
+	return &PauseExecutionService{RequestContext: requestContext, Context: ctx}
 }
 
 func (h *PauseExecutionService) Run(req *workflow.ExecutionActionReq) (resp *workflow.ExecutionActionResp, err error) {
-	//defer func() {
-	// hlog.CtxInfof(h.Context, "req = %+v", req)
-	// hlog.CtxInfof(h.Context, "resp = %+v", resp)
-	//}()
+	// defer func() {
+	//  hlog.CtxInfof(h.Context, "req = %+v", req)
+	//  hlog.CtxInfof(h.Context, "resp = %+v", resp)
+	// }()
 	// todo edit your code
 	return
 }

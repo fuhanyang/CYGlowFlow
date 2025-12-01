@@ -12,12 +12,12 @@ type UpdateUserInfoService struct {
 	Context        context.Context
 }
 
-func NewUpdateUserInfoService(Context context.Context, RequestContext *app.RequestContext) *UpdateUserInfoService {
-	return &UpdateUserInfoService{RequestContext: RequestContext, Context: Context}
+func NewUpdateUserInfoService(ctx context.Context, requestContext *app.RequestContext) *UpdateUserInfoService {
+	return &UpdateUserInfoService{RequestContext: requestContext, Context: ctx}
 }
 
 func (h *UpdateUserInfoService) Run(req *user.UpdateUserInfoReq) (resp *user.UpdateUserInfoResp, err error) {
-	//defer func() {
+	// defer func() {
 	// hlog.CtxInfof(h.Context, "req = %+v", req)
 	// hlog.CtxInfof(h.Context, "resp = %+v", resp)
 	//}()

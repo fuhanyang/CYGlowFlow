@@ -13,7 +13,9 @@ import (
 
 type LoginService struct {
 	ctx context.Context
-} // NewLoginService new LoginService
+}
+
+// NewLoginService new LoginService
 func NewLoginService(ctx context.Context) *LoginService {
 	return &LoginService{ctx: ctx}
 }

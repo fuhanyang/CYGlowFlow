@@ -23,8 +23,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &login.RegisterResp{}
-	resp, err = loginService.NewRegisterService(ctx, c).Run(&req)
+	resp, err := loginService.NewRegisterService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return
@@ -62,8 +61,7 @@ func Login(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &login.LoginResp{}
-	resp, err = loginService.NewLoginService(ctx, c).Run(&req)
+	resp, err := loginService.NewLoginService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return
@@ -93,8 +91,7 @@ func Logoff(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &login.LogoffResp{}
-	resp, err = loginService.NewLogoffService(ctx, c).Run(&req)
+	resp, err := loginService.NewLogoffService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
 		return

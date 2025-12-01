@@ -12,15 +12,15 @@ type GetWorkflowService struct {
 	Context        context.Context
 }
 
-func NewGetWorkflowService(Context context.Context, RequestContext *app.RequestContext) *GetWorkflowService {
-	return &GetWorkflowService{RequestContext: RequestContext, Context: Context}
+func NewGetWorkflowService(ctx context.Context, requestContext *app.RequestContext) *GetWorkflowService {
+	return &GetWorkflowService{RequestContext: requestContext, Context: ctx}
 }
 
 func (h *GetWorkflowService) Run(req *workflow.GetWorkflowReq) (resp *workflow.GetWorkflowResp, err error) {
-	//defer func() {
-	// hlog.CtxInfof(h.Context, "req = %+v", req)
-	// hlog.CtxInfof(h.Context, "resp = %+v", resp)
-	//}()
+	// defer func() {
+	//  hlog.CtxInfof(h.Context, "req = %+v", req)
+	//  hlog.CtxInfof(h.Context, "resp = %+v", resp)
+	// }()
 	// todo edit your code
 	return
 }

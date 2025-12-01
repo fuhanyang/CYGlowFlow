@@ -69,7 +69,7 @@ func AccessLogMiddleware() app.HandlerFunc {
 
 		// 仅在错误时记录 ErrorMsg，节省空间
 		if statusCode >= 400 {
-			errMsg := string(c.Errors.String())
+			errMsg := c.Errors.String()
 			logEntry.ErrorMsg = &errMsg
 		}
 

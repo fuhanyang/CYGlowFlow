@@ -21,7 +21,7 @@ func RefreshText(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &chat.RefreshTextResp{}
+	var resp *chat.RefreshTextResp
 	resp, err = chatService.NewRefreshTextService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)

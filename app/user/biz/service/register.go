@@ -45,8 +45,8 @@ func (s *RegisterService) Run(req *user.RegisterReq) (resp *user.RegisterResp, e
 
 	// 3. 生成账号 (数字)
 	// 简单生成一个随机数作为账号，实际生产环境需要发号器
-	rand.Seed(time.Now().UnixNano())
-	accountNum := int64(rand.Intn(90000000) + 10000000) // 8位随机数
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	accountNum := int64(r.Intn(90000000) + 10000000) // 8位随机数
 
 	// 确保账号唯一
 	for {
@@ -56,7 +56,7 @@ func (s *RegisterService) Run(req *user.RegisterReq) (resp *user.RegisterResp, e
 			break
 		}
 		// 冲突了，重新生成
-		accountNum = int64(rand.Intn(90000000) + 10000000)
+		accountNum = int64(r.Intn(90000000) + 10000000)
 	}
 
 	// 4. 密码加密 (MD5 简单示例，生产建议使用 bcrypt/argon2)

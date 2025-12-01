@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"testing"
 	user "github.com/fuhanyang/CYGlowFlow/rpc_gen/kitex_gen/user"
+	"testing"
 )
 
 func TestLogout_Run(t *testing.T) {

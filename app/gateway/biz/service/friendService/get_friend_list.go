@@ -12,15 +12,15 @@ type GetFriendListService struct {
 	Context        context.Context
 }
 
-func NewGetFriendListService(Context context.Context, RequestContext *app.RequestContext) *GetFriendListService {
-	return &GetFriendListService{RequestContext: RequestContext, Context: Context}
+func NewGetFriendListService(ctx context.Context, requestContext *app.RequestContext) *GetFriendListService {
+	return &GetFriendListService{RequestContext: requestContext, Context: ctx}
 }
 
 func (h *GetFriendListService) Run(req *friend.GetFriendListReq) (resp *friend.GetFriendListResp, err error) {
-	//defer func() {
-	// hlog.CtxInfof(h.Context, "req = %+v", req)
-	// hlog.CtxInfof(h.Context, "resp = %+v", resp)
-	//}()
+	// defer func() {
+	//  hlog.CtxInfof(h.Context, "req = %+v", req)
+	//  hlog.CtxInfof(h.Context, "resp = %+v", resp)
+	// }()
 	// todo edit your code
 	return
 }

@@ -22,12 +22,42 @@ jobs:
         
     - name: Run gofmt
       run: |
-        test -z $(gofmt -l .)
+        test -z "$(gofmt -l .)"
+        
+    - name: Cache golangci-lint binary
+      uses: actions/cache@v3
+      id: cache-golangci-lint
+      with:
+        path: |
+          ~/go/bin/golangci-lint
+        key: ${{ runner.os }}-golangci-lint-v1.64.8
+        
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('go.work') }}-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+        
+    - name: Install golangci-lint using Go
+      if: steps.cache-golangci-lint.outputs.cache-hit != 'true'
+      run: |
+        go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
         
     - name: Run golangci-lint
-      uses: golangci/golangci-lint-action@v3
-      with:
-        version: latest
+      run: |
+        echo "Discovering Go modules for linting..."
+        MODULES=$(find ./app -name "go.mod" -type f | xargs -I {} dirname {} | sort | uniq)
+        echo "Found modules to lint: $MODULES"
+        
+        for MODULE in $MODULES; do
+          echo "Linting module: $MODULE"
+          cd $MODULE
+          $(go env GOPATH)/bin/golangci-lint run --out-format=colored-line-number
+          cd - > /dev/null
+        done
 
   unit-tests:
     name: Unit Tests
@@ -45,11 +75,33 @@ jobs:
         
     - name: Run unit tests
       run: |
-        go test -v -race ./...
+        echo "Discovering Go modules in app directory..."
+        MODULES=$(find ./app -name "go.mod" -type f | xargs -I {} dirname {} | sort | uniq)
+        echo "Found modules: $MODULES"
+        
+        # 构建测试路径列表
+        TEST_PATHS="./common/... ./rpc_gen/..."
+        for MODULE in $MODULES; do
+          TEST_PATHS="$TEST_PATHS $MODULE/..."
+        done
+        
+        echo "Running tests for paths: $TEST_PATHS"
+        go test -v -race $TEST_PATHS
         
     - name: Generate test coverage
       run: |
-        go test -race -coverprofile=coverage.out -covermode=atomic ./...
+        echo "Discovering Go modules in app directory..."
+        MODULES=$(find ./app -name "go.mod" -type f | xargs -I {} dirname {} | sort | uniq)
+        echo "Found modules: $MODULES"
+        
+        # 构建测试路径列表
+        TEST_PATHS="./common/... ./rpc_gen/..."
+        for MODULE in $MODULES; do
+          TEST_PATHS="$TEST_PATHS $MODULE/..."
+        done
+        
+        echo "Generating coverage for paths: $TEST_PATHS"
+        go test -race -coverprofile=coverage.out -covermode=atomic $TEST_PATHS
         
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
@@ -62,10 +114,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: unit-tests
     
-    strategy:
-      matrix:
-        service: [gateway, user]
-    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -75,18 +123,30 @@ jobs:
       with:
         go-version: '1.25'
         
-    - name: Build ${{ matrix.service }}
+    - name: Discover build services
+      id: discover-build
       run: |
-        cd app/${{ matrix.service }}
-        go build -o ../../${{ matrix.service }}-service
-        chmod +x ../../${{ matrix.service }}-service
+        echo "Discovering Go services to build..."
+        SERVICES=$(find ./app -name "go.mod" -type f | xargs -I {} dirname {} | sed 's|^./app/||' | sort | uniq)
+        echo "Found services: $SERVICES"
+        echo "services=$SERVICES" >> $GITHUB_OUTPUT
+      
+    - name: Build services
+      run: |
+        for SERVICE in ${{ steps.discover-build.outputs.services }}; do
+          echo "Building service: $SERVICE"
+          cd app/$SERVICE
+          go build -o ../../$SERVICE-service
+          chmod +x ../../$SERVICE-service
+          cd -
+        done
         
-    - name: Upload binary artifact
+    - name: Upload binary artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ matrix.service }}-binary
-        path: ${{ matrix.service }}-service
-
+        name: binaries
+        path: |
+          *-service
   build-images:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
@@ -97,6 +157,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Discover Docker services
+      id: discover-services
+      run: |
+        echo "Discovering Docker services in app directory..."
+        SERVICES=$(find ./app -name "Dockerfile" -type f | xargs -I {} dirname {} | sed 's|^./app/||' | sort | uniq)
+        echo "Found services: $SERVICES"
+        echo "services=$SERVICES" >> $GITHUB_OUTPUT
+      
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
       
@@ -106,26 +174,14 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         
-    - name: Build and push Gateway image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: ./app/gateway/Dockerfile
-        push: true
-        tags: |
-          liangjiaqi873/cyglowflow-gateway:${{ github.sha }}
-          liangjiaqi873/cyglowflow-gateway:${{ github.ref == 'refs/heads/dev' && 'dev-latest' || github.ref == 'refs/heads/main' && 'prod-latest' || github.ref_name }}
-        build-args: |
-          BUILD_ENV=${{ github.ref == 'refs/heads/dev' && 'test' || github.ref == 'refs/heads/main' && 'prod' || 'prod' }}
-          
-    - name: Build and push User service image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: ./app/user/Dockerfile
-        push: true
-        tags: |
-          liangjiaqi873/cyglowflow-user:${{ github.sha }}
-          liangjiaqi873/cyglowflow-user:${{ github.ref == 'refs/heads/dev' && 'dev-latest' || github.ref == 'refs/heads/main' && 'prod-latest' || github.ref_name }}
-        build-args: |
-          BUILD_ENV=${{ github.ref == 'refs/heads/dev' && 'test' || github.ref == 'refs/heads/main' && 'prod' || 'prod' }}
+    - name: Build and push Docker images
+      run: |
+        for SERVICE in ${{ steps.discover-services.outputs.services }}; do
+          echo "Building and pushing Docker image for service: $SERVICE"
+          docker buildx build . \
+            --file ./app/$SERVICE/Dockerfile \
+            --tag liangjiaqi873/cyglowflow-$SERVICE:${{ github.sha }} \
+            --tag liangjiaqi873/cyglowflow-$SERVICE:${{ github.ref == 'refs/heads/dev' && 'dev-latest' || github.ref == 'refs/heads/main' && 'prod-latest' || github.ref_name }} \
+            --build-arg BUILD_ENV=${{ github.ref == 'refs/heads/dev' && 'test' || github.ref == 'refs/heads/main' && 'prod' || 'prod' }} \
+            --push
+        done

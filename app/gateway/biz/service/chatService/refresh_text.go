@@ -12,15 +12,15 @@ type RefreshTextService struct {
 	Context        context.Context
 }
 
-func NewRefreshTextService(Context context.Context, RequestContext *app.RequestContext) *RefreshTextService {
-	return &RefreshTextService{RequestContext: RequestContext, Context: Context}
+func NewRefreshTextService(ctx context.Context, requestContext *app.RequestContext) *RefreshTextService {
+	return &RefreshTextService{RequestContext: requestContext, Context: ctx}
 }
 
 func (h *RefreshTextService) Run(req *chat.RefreshTextReq) (resp *chat.RefreshTextResp, err error) {
-	//defer func() {
-	// hlog.CtxInfof(h.Context, "req = %+v", req)
-	// hlog.CtxInfof(h.Context, "resp = %+v", resp)
-	//}()
+	// defer func() {
+	//  hlog.CtxInfof(h.Context, "req = %+v", req)
+	//  hlog.CtxInfof(h.Context, "resp = %+v", resp)
+	// }()
 	// todo edit your code
 	return
 }

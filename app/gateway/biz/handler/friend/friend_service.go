@@ -21,7 +21,7 @@ func GetFriendList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &friend.GetFriendListResp{}
+	var resp *friend.GetFriendListResp
 	resp, err = friendService.NewGetFriendListService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
@@ -42,7 +42,7 @@ func AddFriend(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := &friend.AddFriendResp{}
+	var resp *friend.AddFriendResp
 	resp, err = friendService.NewAddFriendService(ctx, c).Run(&req)
 	if err != nil {
 		utils.SendErrResponse(ctx, c, consts.StatusOK, err)
