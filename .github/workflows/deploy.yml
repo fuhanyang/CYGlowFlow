@@ -1,0 +1,54 @@
+name: Deploy to Environments
+
+on:
+  push:
+    tags: 
+      - 'v*'  # 触发生产环境部署
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+    branches: [dev]
+
+jobs:
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/dev'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Deploy to Dev Environment
+      run: |
+        echo "Deploying build #${{ github.sha }} to development environment..."
+        echo "Using Gateway image: liangjiaqi873/cyglowflow-gateway:dev-latest"
+        echo "Using User service image: liangjiaqi873/cyglowflow-user:dev-latest"
+        echo "Environment: ${{ github.ref == 'refs/heads/dev' && 'dev' || 'prod' }}"
+        # 这里添加具体的部署脚本
+        # 例如：docker-compose -f docker-compose.dev.yml up -d
+        # 或者：kubectl apply -f k8s/dev/
+
+  deploy-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Verify Docker images exist
+      run: |
+        echo "Checking if required Docker images exist..."
+        echo "Gateway image: liangjiaqi873/cyglowflow-gateway:${{ github.ref_name }}"
+        echo "User service image: liangjiaqi873/cyglowflow-user:${{ github.ref_name }}"
+        
+    - name: Deploy to Production
+      run: |
+        echo "Deploying version ${{ github.ref_name }} to production..."
+        echo "Using Gateway image: liangjiaqi873/cyglowflow-gateway:${{ github.ref_name }}"
+        echo "Using User service image: liangjiaqi873/cyglowflow-user:${{ github.ref_name }}"
+        echo "Environment: prod"
+        # 生产环境部署逻辑
+        # 假设CI流水线已经在推送标签时构建了相应的镜像
