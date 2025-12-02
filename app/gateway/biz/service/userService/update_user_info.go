@@ -17,10 +17,5 @@ func NewUpdateUserInfoService(ctx context.Context, requestContext *app.RequestCo
 }
 
 func (h *UpdateUserInfoService) Run(req *user.UpdateUserInfoReq) (resp *user.UpdateUserInfoResp, err error) {
-	// defer func() {
-	// hlog.CtxInfof(h.Context, "req = %+v", req)
-	// hlog.CtxInfof(h.Context, "resp = %+v", resp)
-	//}()
-	// todo edit your code
-	return
+	return resp, nil
 }
