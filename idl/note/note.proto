@@ -1,0 +1,237 @@
+syntax = "proto3";
+
+package note_platform.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+import "common.proto"; // 公共基础类型（仅包含PageRequest、PageResponse、BaseResponse）
+
+// ###########################################################################
+// 枚举定义（对应T36任务，与Note相关状态/格式枚举完全对齐）
+// ###########################################################################
+// 笔记格式枚举（支持多格式存储，对应T36、T38任务）
+enum NoteFormat {
+  NOTE_FORMAT_UNSPECIFIED = 0; // 未指定
+  NOTE_FORMAT_MARKDOWN = 1;    // Markdown格式
+  NOTE_FORMAT_HTML = 2;        // 富文本HTML格式
+  NOTE_FORMAT_PLAIN = 3;       // 纯文本格式
+  NOTE_FORMAT_JSON = 4;        // JSON结构化格式
+  NOTE_FORMAT_MARKDOWN_IMAGE = 5; // 带图片的Markdown格式
+}
+
+// 笔记状态枚举（对应T36、T38任务的删除/归档逻辑）
+enum NoteStatus {
+  NOTE_STATUS_UNSPECIFIED = 0; // 未指定
+  NOTE_STATUS_DRAFT = 1;       // 草稿
+  NOTE_STATUS_PUBLISHED = 2;   // 已发布（通过工作流发布）
+  NOTE_STATUS_ARCHIVED = 3;    // 已归档
+  NOTE_STATUS_TRASH = 4;       // 回收站（支持恢复，对应T38删除逻辑）
+}
+
+// 笔记分享状态枚举（对应T41任务的分享功能）
+enum NoteShareStatus {
+  NOTE_SHARE_STATUS_UNSPECIFIED = 0; // 未指定
+  NOTE_SHARE_STATUS_PRIVATE = 1;     // 私有（默认）
+  NOTE_SHARE_STATUS_PUBLIC = 2;      // 公开（生成分享链接）
+  NOTE_SHARE_STATUS_INVITE = 3;      // 邀请可见（预留扩展）
+}
+
+// ###########################################################################
+// 核心消息定义（对应T37任务数据模型，字段完全对齐）
+// ###########################################################################
+// 笔记标签（独立标签，不依赖工作流模块，对应T37、T39任务）
+message NoteTag {
+  string tag_id = 1;                  // 标签ID（独立生成：tag_xxx）
+  string tag_name = 2;                // 标签名称（笔记模块内唯一）
+  optional string color = 3;          // 标签颜色（可选，如#FF0000）
+  string creator_id = 4;              // 创建者ID（关联用户系统）
+  google.protobuf.Timestamp create_time = 5; // 创建时间
+  google.protobuf.Timestamp update_time = 6; // 更新时间
+}
+
+// 笔记主消息（对应T37任务Note数据模型，T38任务CRUD核心）
+message Note {
+  string note_id = 1;                  // 笔记ID（独立生成：note_xxx）
+  string title = 2;                    // 笔记标题（必填）
+  string content = 3;                  // 笔记内容（长文本，按格式存储）
+  NoteFormat format = 4;               // 笔记格式（枚举值）
+  NoteStatus status = 5;               // 笔记状态（枚举值）
+  NoteShareStatus share_status = 6;    // 分享状态（枚举值，对应T41任务）
+  optional string share_link = 7;      // 分享链接（公开状态时生成）
+  repeated string tag_ids = 8;         // 关联标签ID列表（多对多，对应T39任务）
+  string creator_id = 9;               // 创建者ID（关联用户系统）
+  repeated string workflow_ids = 10;   // 关联工作流ID（仅存储，用于联动，对应T42任务）
+  int32 version = 11;                  // 版本号（更新一次+1，对应T40任务）
+  optional string last_execution_id = 12; // 最后一次推送工作流的执行ID（对应T42任务）
+  google.protobuf.Timestamp create_time = 13; // 创建时间
+  google.protobuf.Timestamp update_time = 14; // 更新时间
+  string update_by = 15;               // 最后更新者ID
+}
+
+// 笔记-标签关联中间表（对应T37任务NoteTagRelation数据模型）
+message NoteTagRelation {
+  string relation_id = 1;              // 关联ID（独立生成：relation_xxx）
+  string note_id = 2;                  // 关联笔记ID
+  string tag_id = 3;                   // 关联标签ID
+}
+
+// 笔记版本记录（对应T37任务NoteVersion数据模型，T40任务版本控制）
+message NoteVersion {
+  string version_id = 1;               // 版本ID（独立生成：version_xxx）
+  string note_id = 2;                  // 关联笔记ID
+  int32 version_num = 3;               // 版本号（与Note.version一致）
+  string content = 4;                  // 该版本的笔记内容
+  optional string update_reason = 5;   // 更新原因（可选）
+  string update_by = 6;                // 更新者ID
+  google.protobuf.Timestamp create_time = 7; // 版本创建时间（即笔记更新时间）
+}
+
+// ###########################################################################
+// 请求/响应消息定义（对应T38-T42任务接口参数，完全对齐）
+// ###########################################################################
+// 1. 笔记CRUD请求/响应（对应T38任务）
+message CreateNoteRequest {
+  string title = 1;                    // 笔记标题（必填）
+  string content = 2;                  // 笔记内容（必填）
+  NoteFormat format = 3;               // 笔记格式（必填）
+  optional repeated string tag_ids = 4; // 关联标签ID（可选）
+  optional repeated string workflow_ids = 5; // 关联工作流ID（可选）
+  optional string update_reason = 6;   // 初始版本更新原因（可选）
+}
+
+message CreateNoteResponse {
+  common.v1.BaseResponse base = 1;     // 公共响应格式
+  string note_id = 2;                  // 新建笔记ID
+  int32 version = 3;                   // 初始版本号（1）
+}
+
+message ListNotesRequest {
+  optional string keyword = 1;         // 关键词搜索（标题/内容，可选）
+  optional repeated string tag_ids = 2; // 标签筛选（可选）
+  optional NoteFormat format = 3;      // 格式筛选（可选）
+  optional NoteStatus status = 4;      // 状态筛选（可选）
+  optional NoteShareStatus share_status = 5; // 分享状态筛选（可选）
+  common.v1.PageRequest page = 6;      // 分页参数（必填）
+}
+
+message ListNotesResponse {
+  common.v1.BaseResponse base = 1;     // 公共响应格式
+  repeated Note notes = 2;             // 笔记列表
+  common.v1.PageResponse page_info = 3; // 分页响应信息
+}
+
+message GetNoteDetailRequest {
+  string note_id = 1;                  // 笔记ID（必填）
+  optional int32 version_num = 2;      // 版本号（可选，默认最新版）
+}
+
+message GetNoteDetailResponse {
+  common.v1.BaseResponse base = 1;     // 公共响应格式
+  Note note = 2;                       // 笔记详情
+  repeated NoteTag tags = 3;           // 关联标签详情（联表返回）
+  optional NoteVersion current_version = 4; // 当前版本详情（可选）
+}
+
+message UpdateNoteRequest {
+  string note_id = 1;                  // 笔记ID（必填）
+  optional string title = 2;           // 标题（可选，支持部分更新）
+  optional string content = 3;         // 内容（可选）
+  optional NoteFormat format = 4;      // 格式（可选）
+  optional NoteStatus status = 5;      // 状态（可选）
+  optional NoteShareStatus share_status = 6; // 分享状态（可选，对应T41任务）
+  optional repeated string tag_ids = 7; // 关联标签ID（可选，对应T39任务）
+  optional repeated string workflow_ids = 8; // 关联工作流ID（可选，对应T42任务）
+  string update_reason = 9;            // 更新原因（必填，对应T40任务版本记录）
+}
+
+message UpdateNoteResponse {
+  common.v1.BaseResponse base = 1;     // 公共响应格式
+  int32 new_version = 2;               // 更新后的版本号（对应T40任务）
+}
+
+message DeleteNoteRequest {
+  string note_id = 1;                  // 笔记ID（必填）
+  bool move_to_trash = 2;              // true：移至回收站；false：彻底删除（对应T38任务）
+}
+
+// 2. 标签CRUD请求/响应（对应T39任务）
+message CreateTagRequest {
+  string tag_name = 1;                  // 标签名称（必填，模块内唯一）
+  optional string color = 2;            // 标签颜色（可选）
+}
+
+message CreateTagResponse {
+  common.v1.BaseResponse base = 1;     // 公共响应格式
+  string tag_id = 2;                   // 新建标签ID
+}
+
+message ListTagsRequest {
+  optional string keyword = 1;         // 标签名称搜索（可选）
+}
+
+message ListTagsResponse {
+  common.v1.BaseResponse base = 1;     // 公共响应格式
+  repeated NoteTag tags = 2;           // 标签列表
+}
+
+message UpdateTagRequest {
+  string tag_id = 1;                   // 标签ID（必填）
+  optional string tag_name = 2;        // 标签名称（可选，模块内唯一）
+  optional string color = 3;           // 标签颜色（可选）
+}
+
+// 3. 版本控制请求/响应（对应T40任务）
+message ListNoteVersionsRequest {
+  string note_id = 1;                  // 笔记ID（必填）
+  common.v1.PageRequest page = 2;      // 分页参数（必填）
+}
+
+message ListNoteVersionsResponse {
+  common.v1.BaseResponse base = 1;     // 公共响应格式
+  repeated NoteVersion versions = 2;   // 版本列表（按版本号降序）
+  common.v1.PageResponse page_info = 3; // 分页响应信息
+}
+
+message RollbackNoteVersionRequest {
+  string note_id = 1;                  // 笔记ID（必填）
+  int32 target_version = 2;            // 目标回滚版本号（必填）
+  string rollback_reason = 3;          // 回滚原因（必填）
+}
+
+// 4. 笔记-工作流联动请求/响应（对应T42任务）
+message PushNoteToWorkflowRequest {
+  string note_id = 1;                  // 笔记ID（必填）
+  string workflow_id = 2;              // 目标工作流ID（必填，需通过工作流公开接口校验）
+  map string> data_map = 3;    // 笔记字段→工作流参数映射（如"content":"input.note_content"）
+}
+
+message PushNoteToWorkflowResponse {
+  common.v1.BaseResponse base = 1;     // 公共响应格式
+  string execution_id = 2;             // 工作流执行ID（用于查询执行状态）
+  string note_id = 3;                  // 关联笔记ID（用于更新last_execution_id）
+}
+
+// ###########################################################################
+// 服务定义（对应所有后端任务，接口与任务一一对应）
+// ###########################################################################
+service NoteManagerService {
+  // 笔记CRUD接口（对应T38任务）
+  rpc CreateNote(CreateNoteRequest) returns (CreateNoteResponse);
+  rpc ListNotes(ListNotesRequest) returns (ListNotesResponse);
+  rpc GetNoteDetail(GetNoteDetailRequest) returns (GetNoteDetailResponse);
+  rpc UpdateNote(UpdateNoteRequest) returns (UpdateNoteResponse);
+  rpc DeleteNote(DeleteNoteRequest) returns (common.v1.BaseResponse);
+
+  // 标签CRUD接口（对应T39任务）
+  rpc CreateTag(CreateTagRequest) returns (CreateTagResponse);
+  rpc ListTags(ListTagsRequest) returns (ListTagsResponse);
+  rpc UpdateTag(UpdateTagRequest) returns (common.v1.BaseResponse);
+  rpc DeleteTag(string) returns (common.v1.BaseResponse); // 请求参数：tag_id（字符串）
+
+  // 版本控制接口（对应T40任务）
+  rpc ListNoteVersions(ListNoteVersionsRequest) returns (ListNoteVersionsResponse);
+  rpc RollbackNoteVersion(RollbackNoteVersionRequest) returns (UpdateNoteResponse);
+
+  // 笔记-工作流联动接口（对应T42任务）
+  rpc PushNoteToWorkflow(PushNoteToWorkflowRequest) returns (PushNoteToWorkflowResponse);
+}

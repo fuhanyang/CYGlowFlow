@@ -1,0 +1,125 @@
+syntax = "proto3";
+
+package workflow.distribute.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+import "common.proto";
+
+option go_package = "workflow/distribute";
+
+// 新增：分发相关枚举
+enum DistributionStatus {
+  DISTRIBUTION_STATUS_UNSPECIFIED = 0;
+  DISTRIBUTION_STATUS_SUCCESS = 1;
+  DISTRIBUTION_STATUS_FAILED = 2;
+  DISTRIBUTION_STATUS_RETRYING = 3;
+}
+
+// 新增：分发规则消息（对应 T9 数据模型）
+message DistributionRule {
+  string rule_id = 1;          // 规则ID
+  string workflow_id = 2;      // 关联工作流ID
+  string endpoint_type = 3;    // 端点类型（email/http-api/ai-summary等）
+  map<string, google.protobuf.Any> params = 4; // 端点参数
+  map<string, string> data_map = 5; // 结果格式映射
+  int32 retry_count = 6;       // 重试次数（默认3）
+  WorkflowStatus status = 7;   // 规则状态（复用原有枚举）
+  google.protobuf.Timestamp create_time = 8;
+  google.protobuf.Timestamp update_time = 9;
+}
+
+// 新增：分发记录消息（对应 T9 数据模型）
+message DistributionRecord {
+  string record_id = 1;        // 记录ID
+  string rule_id = 2;          // 关联规则ID
+  string workflow_id = 3;      // 关联工作流ID
+  string execution_id = 4;     // 关联执行ID
+  string endpoint_type = 5;    // 端点类型
+  DistributionStatus status = 6; // 分发状态
+  double duration = 7;         // 分发耗时（秒）
+  string error_msg = 8;        // 错误信息（失败时）
+  string error_stack = 9;      // 错误堆栈（失败时）
+  google.protobuf.Timestamp create_time = 10;
+}
+
+// 新增：分发相关请求/响应消息
+message CreateDistributionRuleRequest {
+  string workflow_id = 1;
+  string endpoint_type = 2;
+  map, google.protobuf.Any> params = 3;
+  map_map = 4;
+  int32 retry_count = 5;
+  WorkflowStatus status = 6;
+}
+
+message CreateDistributionRuleResponse {
+  BaseResponse base = 1;       // 复用统一响应格式
+  string rule_id = 2;
+}
+
+message ListDistributionRulesRequest {
+  string workflow_id = 1;      // 可选，筛选指定工作流的规则
+  PageRequest page = 2;        // 复用分页参数
+}
+
+message ListDistributionRulesResponse {
+  BaseResponse base = 1;
+  repeated DistributionRule rules = 2;
+  PageResponse page_info = 3;  // 复用分页响应
+}
+
+message GetDistributionRecordRequest {
+  string record_id = 1;        // 记录ID
+}
+
+message GetDistributionRecordResponse {
+  BaseResponse base = 1;
+  DistributionRecord record = 2;
+}
+
+message ListDistributionRecordsRequest {
+  string workflow_id = 1;      // 可选
+  string execution_id = 2;     // 可选
+  string endpoint_type = 3;    // 可选
+  DistributionStatus status = 4; // 可选
+  PageRequest page = 5;
+}
+
+message ListDistributionRecordsResponse {
+  BaseResponse base = 1;
+  repeated DistributionRecord records = 2;
+  PageResponse page_info = 3;
+}
+
+message GetSupportedEndpointTypesResponse {
+  BaseResponse base = 1;
+  repeated EndpointTypeItem types = 2;
+}
+
+message EndpointTypeItem {
+  string value = 1; // 端点类型标识（如email）
+  string label = 2; // 显示名称（如"邮件分发"）
+}
+
+// 新增：分发管理服务（对应 T10、T14、T15 任务）
+service DistributionManagerService {
+  // 新增分发规则
+  rpc CreateDistributionRule(CreateDistributionRuleRequest) returns (CreateDistributionRuleResponse);
+  // 查询分发规则列表
+  rpc ListDistributionRules(ListDistributionRulesRequest) returns (ListDistributionRulesResponse);
+  // 查询分发规则详情
+  rpc GetDistributionRule(string) returns (BaseResponse); // 请求参数：rule_id
+  // 更新分发规则
+  rpc UpdateDistributionRule(DistributionRule) returns (BaseResponse);
+  // 删除分发规则
+  rpc DeleteDistributionRule(string) returns (BaseResponse); // 请求参数：rule_id
+  // 查询分发记录列表
+  rpc ListDistributionRecords(ListDistributionRecordsRequest) returns (ListDistributionRecordsResponse);
+  // 查询分发记录详情
+  rpc GetDistributionRecord(GetDistributionRecordRequest) returns (GetDistributionRecordResponse);
+  // 获取支持的端点类型
+  rpc GetSupportedEndpointTypes(google.protobuf.Empty) returns (GetSupportedEndpointTypesResponse);
+}
+
+// 复用原有 proto 中的枚举/消息（WorkflowStatus、PageRequest、BaseResponse 等）

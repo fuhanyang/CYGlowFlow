@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package common;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "common";
+
+
+// 基础响应（所有接口统一响应格式）
+message BaseResponse {
+  int32 code = 1;                  // 状态码（200成功，非200失败）
+  string message = 2;              // 提示信息
+  google.protobuf.Any data = 3;    // 业务数据（成功时返回，支持任意结构）
+  bool success = 4;                // 操作结果（true/false）
+}
+package common.v1;
+
+message PageRequest {
+  int32 page_num = 1;  // 页码（从1开始）
+  int32 page_size = 2; // 每页条数
+}
+
+message PageResponse {
+  int32 page_num = 1;  // 当前页码
+  int32 page_size = 2; // 每页条数
+  int64 total = 3;     // 总条数
+  int32 total_pages = 4; // 总页数
+}
