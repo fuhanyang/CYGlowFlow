@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package workflow.infra.v1;
+
+import "common.proto";
+import "workflow/infra/infra.proto";
+
+option go_package = "workflow/infra/workflow_param";
+
+// 工作流参数配置服务（全局参数/工作流级参数）
+service WorkflowParamService {
+  option (api.service_path) = "workflowParamService";
+  // 设置工作流参数（覆盖/新增）
+  rpc SetWorkflowParams(WorkflowParams) returns (common.BaseResponse);
+
+  // 获取工作流参数
+  rpc GetWorkflowParams(GetWorkflowParamsRequest) returns (common.BaseResponse);
+
+  // 删除工作流参数
+  rpc DeleteWorkflowParam(DeleteParamRequest) returns (common.BaseResponse);
+}
+
+// 工作流参数配置（环境变量/全局参数）
+message WorkflowParams {
+  string workflow_id = 1;          // 工作流ID（必填）
+  map<string, string> params = 2; // 参数键值对（JSON字符串格式）
+}
+
+// 获取工作流参数请求
+message GetWorkflowParamsRequest {
+  string workflow_id = 1;          // 工作流ID（必填）
+}
+
+// 删除参数请求
+message DeleteParamRequest {
+  string workflow_id = 1;          // 工作流ID（必填）
+  string param_key = 2;            // 要删除的参数键（必填）
+}

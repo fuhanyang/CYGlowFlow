@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package workflow.infra.v1;
+
+import "common.proto";
+import "workflow/infra/infra.proto";
+
+option go_package = "workflow/infra/monitor_alert";
+
+// 监控告警服务（指标统计/故障上报/告警管理）
+service MonitorAlertService {
+  option (api.service_path) = "monitorAlertService";
+  // 获取工作流执行指标（今日/昨日/自定义时间范围）
+  rpc GetExecutionMetrics(MetricQueryRequest) returns (common.BaseResponse);
+
+  // 获取故障告警列表（支持分页和筛选）
+  rpc ListErrorAlerts(AlertQueryRequest) returns (common.BaseResponse);
+
+  // 标记告警已处理
+  rpc MarkAlertHandled(MarkAlertHandledRequest) returns (common.BaseResponse);
+}
+
+// 执行指标统计
+message ExecutionMetric {
+  string workflow_id = 1;          // 工作流ID
+  string workflow_name = 2;        // 工作流名称
+  int32 total_executions = 3;      // 今日总执行次数
+  int32 success_count = 4;         // 今日成功次数
+  int32 failed_count = 5;          // 今日失败次数
+  double success_rate = 6;         // 成功率（%）
+  double avg_duration = 7;         // 平均执行耗时（秒）
+  double max_duration = 8;         // 最大执行耗时（秒）
+  int64 update_time = 9;           // 指标更新时间（Unix时间戳，秒）
+}
+
+// 故障告警通知
+message ErrorAlert {
+  string alert_id = 1;             // 告警ID
+  string workflow_id = 2;          // 关联工作流ID
+  string workflow_name = 3;        // 工作流名称
+  string execution_id = 4;         // 关联执行ID
+  ErrorInfo error = 5;             // 错误详情
+  int64 alert_time = 6;            // 告警时间（Unix时间戳，秒）
+  repeated string notify_channels = 7; // 通知渠道（如：email、dingtalk、system）
+  bool is_handled = 8;             // 是否已处理（默认false）
+}
+
+// 指标查询请求
+message MetricQueryRequest {
+  string workflow_id = 1;          // 工作流ID（可选，为空查所有）
+  string time_range = 2;           // 时间范围（today/yesterday/7days/custom）
+  int64 custom_start = 3;          // 自定义开始时间（time_range=custom时必填，Unix时间戳，秒）
+  int64 custom_end = 4;            // 自定义结束时间（time_range=custom时必填，Unix时间戳，秒）
+}
+
+// 告警查询请求（扩展分页参数）
+message AlertQueryRequest {
+  common.PageRequest page = 1;            // 分页参数
+  string workflow_id = 2;          // 工作流ID（可选）
+  ErrorType error_type = 3;        // 错误类型（可选）
+  bool is_handled = 4;             // 是否已处理（可选）
+  int64 start_time = 5;            // 开始时间（可选，Unix时间戳，秒）
+  int64 end_time = 6;              // 结束时间（可选，Unix时间戳，秒）
+}
+
+// 标记告警已处理请求
+message MarkAlertHandledRequest {
+  string alert_id = 1;             // 告警ID（必填）
+}

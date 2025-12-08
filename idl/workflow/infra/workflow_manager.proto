@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package workflow.infra.v1;
+
+import "common.proto";
+import "workflow/infra/infra.proto";
+
+option go_package = "workflow/infra/workflow_manager";
+
+// 工作流管理服务（创建/查询/更新/删除工作流）
+service WorkflowManagerService {
+  option (api.service_path) = "workflowManagerService";
+  // 创建工作流
+  rpc CreateWorkflow(WorkflowInfo) returns (common.BaseResponse);
+
+  // 查询工作流列表（支持分页和筛选）
+  rpc ListWorkflows(common.PageRequest) returns (common.BaseResponse);
+
+  // 查询工作流详情
+  rpc GetWorkflowDetail(GetWorkflowDetailRequest) returns (common.BaseResponse);
+
+  // 更新工作流配置（部分更新）
+  rpc UpdateWorkflow(WorkflowInfo) returns (common.BaseResponse);
+
+  // 启用/停用工作流
+  rpc UpdateWorkflowStatus(UpdateStatusRequest) returns (common.BaseResponse);
+
+  // 删除工作流
+  rpc DeleteWorkflow(DeleteWorkflowRequest) returns (common.BaseResponse);
+}
+
+// 工作流基本信息
+message WorkflowInfo {
+  string workflow_id = 1;          // 工作流ID（平台唯一标识）
+  string name = 2;                 // 工作流名称
+  string description = 3;          // 工作流描述
+  WorkflowStatus status = 4;       // 工作流状态
+  TriggerType trigger_type = 5;    // 触发类型
+  TriggerConfig trigger_config = 6; // 触发配置
+  repeated NodeConfig nodes = 7;   // 节点配置列表
+  int64 create_time = 8;           // 创建时间（Unix时间戳，秒）
+  int64 update_time = 9;           // 更新时间（Unix时间戳，秒）
+  string creator = 10;             // 创建人ID
+}
+
+// 查询工作流详情请求
+message GetWorkflowDetailRequest {
+  string workflow_id = 1;          // 工作流ID（必填）
+}
+
+// 删除工作流请求
+message DeleteWorkflowRequest {
+  string workflow_id = 1;          // 工作流ID（必填）
+}
+
+// 更新工作流状态请求
+message UpdateStatusRequest {
+  string workflow_id = 1;          // 工作流ID（必填）
+  WorkflowStatus status = 2;       // 目标状态（ACTIVE/INACTIVE）
+}

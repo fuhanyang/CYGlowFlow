@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package workflow.infra.v1;
+
+import "common.proto";
+import "workflow/infra/infra.proto";
+import "api.proto";
+
+option go_package = "workflow/infra/exeution_manager";
+
+// 工作流执行管理服务（触发执行/查询状态/终止执行）
+service ExecutionManagerService {
+  option (api.service_path) = "excutionManagerService";
+  // 触发工作流执行
+  rpc ExecuteWorkflow(ExecuteWorkflowRequest) returns (common.BaseResponse);
+
+  // 查询执行列表（支持分页和筛选）
+  rpc ListExecutions(ExecutionQueryRequest) returns (common.BaseResponse);
+
+  // 查询执行详情
+  rpc GetExecutionDetail(GetExecutionDetailRequest) returns (common.BaseResponse);
+
+  // 终止正在运行的执行
+  rpc CancelExecution(CancelExecutionRequest) returns (common.BaseResponse);
+}
+
+// 工作流执行请求参数
+message ExecuteWorkflowRequest {
+  string workflow_id = 1;          // 工作流ID（必填）
+  map<string, string> input_data = 2; // 输入数据（可选，JSON字符串格式）
+  bool wait_for_result = 3;        // 是否等待执行结果（默认false，异步执行）
+}
+
+// 工作流执行信息
+message ExecutionInfo {
+  string execution_id = 1;         // 执行ID（平台唯一标识）
+  string workflow_id = 2;          // 关联工作流ID
+  ExecutionStatus status = 3;      // 执行状态
+  int64 start_time = 4;            // 开始时间（Unix时间戳，秒）
+  int64 end_time = 5;              // 结束时间（Unix时间戳，秒）
+  double duration = 6;             // 执行耗时（秒）
+  map<string, string> input_data = 7; // 输入数据（JSON字符串格式）
+  map<string, string> output_data = 8; // 输出数据（成功时返回，JSON字符串格式）
+  ErrorInfo error = 9;             // 错误信息（失败时返回）
+  string executor = 10;            // 执行人ID（手动触发时）
+}
+
+// 执行查询请求（扩展分页参数）
+message ExecutionQueryRequest {
+  common.PageRequest page = 1;            // 分页参数
+  string workflow_id = 2;          // 工作流ID（可选，筛选指定工作流）
+  ExecutionStatus status = 3;      // 执行状态（可选，筛选指定状态）
+  int64 start_time = 4;            // 开始时间（可选，Unix时间戳，秒）
+  int64 end_time = 5;              // 结束时间（可选，Unix时间戳，秒）
+}
+
+// 查询执行详情请求
+message GetExecutionDetailRequest {
+  string execution_id = 1;         // 执行ID（必填）
+}
+
+// 终止执行请求
+message CancelExecutionRequest {
+  string execution_id = 1;         // 执行ID（必填）
+}

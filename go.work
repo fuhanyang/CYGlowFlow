@@ -1,8 +1,9 @@
-go 1.25.0
+go 1.25.1
 
 use (
 	./app/gateway
 	./app/user
 	./common
 	./rpc_gen
+	./app/workflow
 )

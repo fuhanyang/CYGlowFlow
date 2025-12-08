@@ -42,7 +42,7 @@ cwgo server -I ../../idl --type HTTP --service gateway --module github.com/fuhan
 cwgo server -I ../../idl --type HTTP --service gateway --module github.com/fuhanyang/CYGlowFlow/app/gateway --idl ../../idl/gateway/friend.proto
 cwgo server -I ../../idl --type HTTP --service gateway --module github.com/fuhanyang/CYGlowFlow/app/gateway --idl ../../idl/gateway/news.proto
 cwgo server -I ../../idl --type HTTP --service gateway --module github.com/fuhanyang/CYGlowFlow/app/gateway --idl ../../idl/gateway/workflow.proto
-cwgo server -I ../../idl --type HTTP --service gateway --module github.com/fuhanyang/CYGlowFlow/app/gatewa --idl ../../idl/gateway/user.proto
+cwgo server -I ../../idl --type HTTP --service gateway --module github.com/fuhanyang/CYGlowFlow/app/gateway --idl ../../idl/gateway/user.proto
 cd ../..
 goto end
 
@@ -55,50 +55,19 @@ cwgo server --type RPC --service user --module github.com/fuhanyang/CYGlowFlow/a
 cd ../..
 goto end
 
-:gen-product
+:gen-workflow
 cd rpc_gen
-cwgo client --type RPC --service product --module github.com/fuhanyang/CYGlowFlow/rpc_gen  -I ../idl  --idl ../idl/product.proto
+cwgo client --type RPC --service workflow --module github.com/fuhanyang/CYGlowFlow/rpc_gen  -I ../idl  --idl ../idl/workflow/infra/execution_manager.proto
+cwgo client --type RPC --service workflow --module github.com/fuhanyang/CYGlowFlow/rpc_gen  -I ../idl  --idl ../idl/workflow/infra/workflow_manager.proto
 cd ..
-cd app/product
-cwgo server --type RPC --service product --module github.com/fuhanyang/CYGlowFlow/app/product --pass "-use github.com/fuhanyang/CYGlowFlow/rpc_gen/kitex_gen"  -I ../../idl  --idl ../../idl/product.proto
+cd app/workflow
+cwgo server --type RPC --service workflow  --module github.com/fuhanyang/CYGlowFlow/app/workflow --pass "-use github.com/fuhanyang/CYGlowFlow/rpc_gen/kitex_gen"  -I ../../idl  --idl ../../idl/workflow/infra/execution_manager.proto
+cwgo server --type RPC --service workflow  --module github.com/fuhanyang/CYGlowFlow/app/workflow --pass "-use github.com/fuhanyang/CYGlowFlow/rpc_gen/kitex_gen"  -I ../../idl  --idl ../../idl/workflow/infra/workflow_manager.proto
+cd ..
 cd ../..
 goto end
 
-:gen-cart
-cd rpc_gen
-cwgo client --type RPC --service cart --module github.com/fuhanyang/CYGlowFlow/rpc_gen  -I ../idl  --idl ../idl/cart.proto
-cd ..
-cd app/cart
-cwgo server --type RPC --service cart --module github.com/fuhanyang/CYGlowFlow/app/cart --pass "-use github.com/fuhanyang/CYGlowFlow/rpc_gen/kitex_gen"  -I ../../idl  --idl ../../idl/cart.proto
-cd ../..
-goto end
 
-:gen-payment
-cd rpc_gen
-cwgo client --type RPC --service payment --module github.com/fuhanyang/CYGlowFlow/rpc_gen  -I ../idl  --idl ../idl/payment.proto
-cd ..
-cd app/payment
-cwgo server --type RPC --service payment --module github.com/fuhanyang/CYGlowFlow/app/payment --pass "-use github.com/fuhanyang/CYGlowFlow/rpc_gen/kitex_gen"  -I ../../idl  --idl ../../idl/payment.proto
-cd ../..
-goto end
-
-:gen-checkout
-cd rpc_gen
-cwgo client --type RPC --service checkout --module github.com/fuhanyang/CYGlowFlow/rpc_gen  -I ../idl  --idl ../idl/checkout.proto
-cd ..
-cd app/checkout
-cwgo server --type RPC --service checkout --module github.com/fuhanyang/CYGlowFlow/app/checkout --pass "-use github.com/fuhanyang/CYGlowFlow/rpc_gen/kitex_gen"  -I ../../idl  --idl ../../idl/checkout.proto
-cd ../..
-goto end
-
-:gen-order
-cd rpc_gen
-cwgo client --type RPC --service order --module github.com/fuhanyang/CYGlowFlow/rpc_gen  -I ../idl  --idl ../idl/order.proto
-cd ..
-cd app/order
-cwgo server --type RPC --service order --module github.com/fuhanyang/CYGlowFlow/app/order --pass "-use github.com/fuhanyang/CYGlowFlow/rpc_gen/kitex_gen"  -I ../../idl  --idl ../../idl/order.proto
-cd ../..
-goto end
 
 :help
 echo 用法: build.bat [command]
@@ -108,11 +77,6 @@ echo   gen-demo-thrift
 echo   demo-link-fix
 echo   gen-gateway
 echo   gen-user
-echo   gen-product
-echo   gen-cart
-echo   gen-payment
-echo   gen-checkout
-echo   gen-order
 
 :end
 

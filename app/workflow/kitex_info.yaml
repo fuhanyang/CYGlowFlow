@@ -1,0 +1,3 @@
+kitexinfo:
+  ServiceName: 'workflow/infra/execution_manager'
+  ToolVersion: 'v0.9.1'

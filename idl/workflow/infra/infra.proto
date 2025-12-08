@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package workflow.infra.v1;
+
+option go_package = "workflow/infra/infra";
+
+// 通用枚举定义（全局复用）
+// 工作流状态
+enum WorkflowStatus {
+  WORKFLOW_STATUS_UNSPECIFIED = 0;  // 未指定（默认值）
+  WORKFLOW_STATUS_INACTIVE = 1;     // 停用
+  WORKFLOW_STATUS_ACTIVE = 2;       // 启用
+  WORKFLOW_STATUS_DELETED = 3;      // 已删除
+}
+
+// 工作流触发类型
+enum TriggerType {
+  TRIGGER_TYPE_UNSPECIFIED = 0;
+  TRIGGER_TYPE_MANUAL = 1;          // 手动触发
+  TRIGGER_TYPE_CRON = 2;            // 定时触发（Cron表达式）
+  TRIGGER_TYPE_WEBHOOK = 3;         // Webhook触发
+}
+
+// 执行状态
+enum ExecutionStatus {
+  EXECUTION_STATUS_UNSPECIFIED = 0;
+  EXECUTION_STATUS_RUNNING = 1;     // 运行中
+  EXECUTION_STATUS_SUCCEEDED = 2;   // 执行成功
+  EXECUTION_STATUS_FAILED = 3;      // 执行失败
+  EXECUTION_STATUS_CANCELLED = 4;   // 已取消
+}
+
+// 故障类型
+enum ErrorType {
+  ERROR_TYPE_UNSPECIFIED = 0;
+  ERROR_TYPE_PARAM = 1;             // 参数错误
+  ERROR_TYPE_NETWORK = 2;           // 网络异常
+  ERROR_TYPE_DATASOURCE = 3;        // 数据源错误
+  ERROR_TYPE_NODE = 4;              // 节点执行错误
+  ERROR_TYPE_SYSTEM = 5;            // 系统错误
+}
+
+
+// 业务核心消息定义
+// 封装后的节点配置（简化版n8n节点）
+message NodeConfig {
+  string node_id = 1;              // 节点唯一ID（平台生成）
+  string node_type = 2;            // 封装节点类型（如：quick-http、db-postgres、email-send）
+  string name = 3;                 // 节点名称（显示用）
+  map<string, string> params = 4;  // 节点参数（键值对，JSON字符串格式）
+  repeated string input_nodes = 5; // 输入节点ID（依赖的前置节点）
+}
+
+// 触发配置（根据TriggerType动态适配）
+message TriggerConfig {
+  TriggerType type = 1;            // 触发类型
+  string cron_expr = 2;            // Cron表达式（TriggerType=Cron时必填）
+  string webhook_url = 3;          // Webhook地址（TriggerType=Webhook时自动生成）
+  bool webhook_auth = 4;           // Webhook是否需要鉴权（默认true）
+  string webhook_secret = 5;       // Webhook鉴权密钥（自动生成）
+}
+
+// 错误详情
+message ErrorInfo {
+  ErrorType error_type = 1;        // 错误类型
+  string error_msg = 2;            // 错误描述
+  string error_stack = 3;          // 错误堆栈（调试用）
+  string node_id = 4;              // 出错节点ID（节点错误时返回）
+  int64 error_time = 5;            // 错误发生时间（Unix时间戳，秒）
+}
+
+// 注意：具体的服务定义已拆分到infra目录下的对应proto文件中：
+// - workflow_manager.proto: WorkflowManagerService
+// - execution_manager.proto: ExecutionManagerService  
+// - workflow_param.proto: WorkflowParamService
+// - monitor_alert.proto: MonitorAlertService
+// 
+// 相关的消息定义也随服务一起移动到对应的文件中。
+// 本文件现在只保留通用的枚举和消息定义，供其他proto文件引用。
